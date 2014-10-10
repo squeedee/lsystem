@@ -1,21 +1,39 @@
 (ns lsystem.core-test
-  (:require [clojure.test :refer :all]
-            [lsystem.core :refer :all]))
+  (:refer-clojure :exclude [iterate])
+  (:require [lsystem.core :refer :all]
+            [expectations :refer :all]))
 
-(def test-rules {\f "fff"
-                 \g "ggg"
+(def test-rules {\f (vec "fff")
+                 \g (vec "ggg")
+                 \c []
                  })
 
-(deftest symbol-parsing
-  (testing "defined rules"
-    (is (= "fff" (parse-symbol test-rules \f)))
-    (is (= "ggg" (parse-symbol test-rules \g))))
+;; Defined rules are locatable
+(expect (vec "fff") (parse-symbol test-rules \f))
+(expect [] (parse-symbol test-rules \c))
 
-  (testing "undefined rules"
-    (is (= \z (parse-symbol test-rules \z))))
+;; Undefined rules return the lookup symbol
+;;   -> lets the l-system not need to define constants but
+;;      does require 'clearing rules'
+(expect [\z] (parse-symbol test-rules \z))
 
-  (testing "tastes good in a curry"
-    (let [parse-test-rules (partial parse-symbol test-rules)]
-      (is (= "fff" (parse-test-rules \f))))))
+;; iterate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(run-tests)
+;; Identity
+(expect [] (iterate test-rules []))
+
+;; Non matching rules give us identity
+(expect [\a] (iterate test-rules [\a]))
+(expect (vec "ab") (iterate test-rules (vec "ab")))
+(expect (vec "abba") (iterate test-rules (vec "abba")))
+
+;; Clearing rules
+(expect [] (iterate test-rules [\c] ))
+(expect [] (iterate test-rules [\c \c]))
+(expect [\a] (iterate test-rules [\c \a \c]))
+
+;; expanding rules
+(expect (vec "fffggg") (iterate test-rules [\f \g]))
+
+;; all at once
+(expect (vec "gggafff") (iterate test-rules [\g \a \c \f]))
