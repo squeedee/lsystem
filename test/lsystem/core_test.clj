@@ -5,6 +5,7 @@
 
 (def test-rules {\f (vec "fff")
                  \g (vec "ggg")
+                 \h (vec "fch")
                  \c []
                  })
 
@@ -37,3 +38,11 @@
 
 ;; all at once
 (expect (vec "gggafff") (iterate test-rules [\g \a \c \f]))
+
+;; recur once is the same as not providing the param
+(expect (vec "gggafff") (iterate test-rules [\g \a \c \f] 1))
+
+;; can itterate many times
+(expect (vec "fch") (iterate test-rules [\h] 1))
+(expect (vec "ffffch") (iterate test-rules [\h] 2))
+(expect (vec "fffffffffffffch") (iterate test-rules [\h] 3))
