@@ -18,31 +18,30 @@
 ;;      does require 'clearing rules'
 (expect [\z] (parse-symbol test-rules \z))
 
-;; iterate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; apply-rules ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Identity
-(expect [] (iterate test-rules []))
+(expect [] (apply-rules test-rules []))
 
 ;; Non matching rules give us identity
-(expect [\a] (iterate test-rules [\a]))
-(expect (vec "ab") (iterate test-rules (vec "ab")))
-(expect (vec "abba") (iterate test-rules (vec "abba")))
+(expect [\a] (apply-rules test-rules [\a]))
+(expect (vec "ab") (apply-rules test-rules (vec "ab")))
+(expect (vec "abba") (apply-rules test-rules (vec "abba")))
 
 ;; Clearing rules
-(expect [] (iterate test-rules [\c] ))
-(expect [] (iterate test-rules [\c \c]))
-(expect [\a] (iterate test-rules [\c \a \c]))
+(expect [] (apply-rules test-rules [\c] ))
+(expect [] (apply-rules test-rules [\c \c]))
+(expect [\a] (apply-rules test-rules [\c \a \c]))
 
 ;; expanding rules
-(expect (vec "fffggg") (iterate test-rules [\f \g]))
+(expect (vec "fffggg") (apply-rules test-rules [\f \g]))
 
 ;; all at once
-(expect (vec "gggafff") (iterate test-rules [\g \a \c \f]))
+(expect (vec "gggafff") (apply-rules test-rules [\g \a \c \f]))
 
-;; recur once is the same as not providing the param
-(expect (vec "gggafff") (iterate test-rules [\g \a \c \f] 1))
-
-;; can itterate many times
-(expect (vec "fch") (iterate test-rules [\h] 1))
-(expect (vec "ffffch") (iterate test-rules [\h] 2))
-(expect (vec "fffffffffffffch") (iterate test-rules [\h] 3))
+;; lazy iteration helper
+(expect `([\h]
+         [\f \c \h]
+         [\f \f \f \f \c \h]
+         [\f \f \f \f \f \f \f \f \f \f \f \f \f \c \h])
+        (take 4 (iterations test-rules [\h])))
